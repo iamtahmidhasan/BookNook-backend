@@ -88,7 +88,7 @@ app.get('/borrows/:email', async(req,res)=>{
 })
 
 app.get("/",(req,res)=>{
-    res.send({massage: "welcome to express backend"})
+    res.send({massage: "Welcome to node & express backend"})
 })
 
 
