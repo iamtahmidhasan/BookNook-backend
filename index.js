@@ -36,6 +36,11 @@ app.get("/book/:id", async(req,res)=>{
     const result = await allBooksCollection.findOne({_id: new ObjectId(id)})
     res.send(result)
 })
+app.delete("/book/:id", async(req,res)=>{
+    const {id} = req.params
+    const result = await allBooksCollection.deleteOne({_id: new ObjectId(id)})
+    res.send(result)
+})
 app.put("/book/:id", async(req,res)=>{
     const {id} = req.params
     const {ownerEmail, ...data} = req.body
