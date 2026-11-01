@@ -92,6 +92,10 @@ app.get("/",(req,res)=>{
 })
 
 
-app.listen(PORT,()=>{
-    console.log("backend running on port",PORT)
-})
+if (!process.env.VERCEL) {
+    app.listen(PORT,()=>{
+        console.log("backend running on port",PORT)
+    })
+}
+
+export default app;
