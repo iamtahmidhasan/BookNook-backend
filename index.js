@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import 'dotenv/config';
 import { MongoClient, ObjectId } from "mongodb";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const app = express()
 const PORT = 5000;
@@ -25,17 +26,45 @@ const db = mongoClient.db("BookNook")
 const allBooksCollection = db.collection("Books")
 const borrowsCollection = db.collection("borrows")
 
+
+const verifyApi =  async (req,res,next)=>{
+    const authHeader =  req.headers.authorization
+    if(!authHeader){
+        return res.status(401).send({massage: "unauthorized"})
+    }
+    const token = authHeader.split(" ")[1] 
+    if(!token){
+        return res.status(401).send({massage: "unauthorized"})
+    }
+    console.log(token)
+
+    const JWKS = createRemoteJWKSet(new URL(`${process.env.NEXT_PUBLIC_URL}/api/auth/jwks`))
+
+    try {
+        const {payload} = await jwtVerify(token,JWKS)
+        console.log(payload)
+        next()
+        
+    } catch (error) {
+        return res.status(401).send({massage: "unauthorized"}) 
+    }
+}
+
 app.get("/books", async (req, res) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) ;
   const result = await allBooksCollection.find().skip((page - 1) * limit).limit(limit).toArray();
   res.send(result);
 });
+app.use(verifyApi);
+
 app.get("/book/:id", async(req,res)=>{
     const {id} = req.params
     const result = await allBooksCollection.findOne({_id: new ObjectId(id)})
     res.send(result)
 })
+
+
 app.delete("/book/:id", async(req,res)=>{
     const {id} = req.params
     const result = await allBooksCollection.deleteOne({_id: new ObjectId(id)})
